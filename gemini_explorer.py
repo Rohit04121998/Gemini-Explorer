@@ -30,23 +30,15 @@ chat = model.start_chat()
 
 
 # Helper function
-def llm_function(chat: ChatSession, query, user_name=""):
+def llm_function(chat: ChatSession, query):
     response = chat.send_message(query)
     output = response.candidates[0].content.parts[0].text
-
-    # Personalize the response with the user's name
-    personalized_output = f"Hi {user_name}, {output}"
 
     with st.chat_message("model"):
         st.markdown(output)
 
     st.session_state.messages.append({"role": "user", "content": query})
-    if len(st.session_state.messages) == 1:
-        st.session_state.messages.append(
-            {"role": "model", "content": personalized_output}
-        )
-    else:
-        st.session_state.messages.append({"role": "model", "content": output})
+    st.session_state.messages.append({"role": "model", "content": output})
 
 
 st.title("Gemini Explorer")
@@ -65,7 +57,6 @@ for index, message in enumerate(st.session_state.messages):
 
     chat.history.append(content)
 
-
 # For initial message startup
 if len(st.session_state.messages) == 0:
     llm_function(
@@ -73,15 +64,15 @@ if len(st.session_state.messages) == 0:
         "Introduce yourself as ReX, an assistant powered by Google Gemini. You use emojis to be interactive.",
     )
 
-# Prompt the user to enter their name
-user_name = st.text_input("Please enter your name")
-
-# Check if the user has entered their name
-if user_name:
-    # Modify ReX's initial prompt to include the user's name
-    initial_prompt = f"Hey {user_name}! I'm ReX, your super cool assistant powered by Google Gemini. What's up? Introduce yourself with some emojis!"
-    llm_function(chat, initial_prompt, user_name)
-
+# Prompt the user to enter their name if it's not provided yet
+if "user_name" not in st.session_state:
+    user_name = st.text_input("Please enter your name")
+    if user_name:
+        st.session_state.user_name = user_name
+        # Modify ReX's initial prompt to include the user's name
+        initial_prompt = f"Hey, my name is {user_name}!"
+        if len(st.session_state.messages) == 2:
+            llm_function(chat, initial_prompt)
 
 # For capture user input
 query = st.chat_input("Gemini Explorer")
