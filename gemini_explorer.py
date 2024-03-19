@@ -30,15 +30,23 @@ chat = model.start_chat()
 
 
 # Helper function
-def llm_function(chat: ChatSession, query):
+def llm_function(chat: ChatSession, query, user_name=""):
     response = chat.send_message(query)
     output = response.candidates[0].content.parts[0].text
+
+    # Personalize the response with the user's name
+    personalized_output = f"Hi {user_name}, {output}"
+
     with st.chat_message("model"):
         st.markdown(output)
 
     st.session_state.messages.append({"role": "user", "content": query})
-
-    st.session_state.messages.append({"role": "model", "content": output})
+    if len(st.session_state.messages) == 1:
+        st.session_state.messages.append(
+            {"role": "model", "content": personalized_output}
+        )
+    else:
+        st.session_state.messages.append({"role": "model", "content": output})
 
 
 st.title("Gemini Explorer")
@@ -57,12 +65,23 @@ for index, message in enumerate(st.session_state.messages):
 
     chat.history.append(content)
 
+
 # For initial message startup
 if len(st.session_state.messages) == 0:
-    st.session_state.messages.append(
-        "Welcome to Gemini Explorer! Ask me about Gemini Flights."
+    llm_function(
+        chat,
+        "Introduce yourself as ReX, an assistant powered by Google Gemini. You use emojis to be interactive.",
     )
-    llm_function(chat, "Welcome to Gemini Explorer! Ask me about Gemini Flights.")
+
+# Prompt the user to enter their name
+user_name = st.text_input("Please enter your name")
+
+# Check if the user has entered their name
+if user_name:
+    # Modify ReX's initial prompt to include the user's name
+    initial_prompt = f"Hey {user_name}! I'm ReX, your super cool assistant powered by Google Gemini. What's up? Introduce yourself with some emojis!"
+    llm_function(chat, initial_prompt, user_name)
+
 
 # For capture user input
 query = st.chat_input("Gemini Explorer")
@@ -71,13 +90,3 @@ if query:
     with st.chat_message("user"):
         st.markdown(query)
     llm_function(chat, query)
-
-# # Sending a Prompt and Receiving a Response
-# prompt = "Once upon a time"
-# response = chat.send_message(prompt)
-# st.write("Generated Response:", response)
-
-# # Sending Another Prompt
-# prompt2 = "In a galaxy far, far away"
-# response2 = chat.send_message(prompt2)
-# st.write("Generated Response:", response2)
