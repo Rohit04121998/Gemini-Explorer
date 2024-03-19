@@ -28,6 +28,50 @@ config = generative_models.GenerationConfig(temperature=0.4)
 model = GenerativeModel("gemini-pro", generation_config=config)
 chat = model.start_chat()
 
+
+# Helper function
+def llm_function(chat: ChatSession, query):
+    response = chat.send_message(query)
+    output = response.candidates[0].content.parts[0].text
+    with st.chat_message("model"):
+        st.markdown(output)
+
+    st.session_state.messages.append({"role": "user", "content": query})
+
+    st.session_state.messages.append({"role": "model", "content": output})
+
+
+st.title("Gemini Explorer")
+
+# Initialize chat history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Display and load to chat history
+for index, message in enumerate(st.session_state.messages):
+    content = Content(role=message["role"], parts=[Part.from_text(message["content"])])
+
+    if index != 0:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    chat.history.append(content)
+
+# For initial message startup
+if len(st.session_state.messages) == 0:
+    st.session_state.messages.append(
+        "Welcome to Gemini Explorer! Ask me about Gemini Flights."
+    )
+    llm_function(chat, "Welcome to Gemini Explorer! Ask me about Gemini Flights.")
+
+# For capture user input
+query = st.chat_input("Gemini Explorer")
+
+if query:
+    with st.chat_message("user"):
+        st.markdown(query)
+    llm_function(chat, query)
+
 # # Sending a Prompt and Receiving a Response
 # prompt = "Once upon a time"
 # response = chat.send_message(prompt)
