@@ -70,7 +70,6 @@ Create a user-friendly chat interface using Streamlit that connects with Google'
 ## Task 6: 📄 Preparing Submission
 
  - A GitHub repository for the project containing all the project files.
- - Loom Video representing the overall approach. [Loom Link](https://www.loom.com/share/1a9ebcc964504b4380433bc4ed9eb033?sid=25201f0b-695c-4b50-9b98-85ee4ca76412)
 
 ##  Issues Faced
  - ⚠️ **Issue 403: Permission Denied Error**: Check if you have provided project_id rather than project name in your code or if the service account is activated.
